@@ -134,6 +134,21 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Breaking/Launch Info — Targets trending news searches */}
+      <section className="py-4 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-200">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="flex items-center gap-1.5 px-3 py-1 bg-green-600 text-white text-xs font-bold rounded-full animate-pulse">
+              <span className="w-2 h-2 bg-white rounded-full"></span>
+              LAUNCHED TODAY
+            </span>
+            <p className="text-sm text-green-800 font-medium">
+              <strong>MP Sugam Parivahan</strong> launched with <strong>351 buses</strong> across 7 regions on September 25, 2026 — Indore gets 145 buses
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Popular Routes */}
       <section className="py-10 lg:py-14 bg-white">
         <div className="max-w-7xl mx-auto px-4">
@@ -362,6 +377,94 @@ export default function HomePage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section — Critical for SEO Featured Snippets */}
+      <section className="py-10 lg:py-14 bg-white">
+        <div className="max-w-4xl mx-auto px-4">
+          <h2 className="text-xl md:text-2xl font-bold text-navy-900 mb-2 text-center">
+            MP Sugam Parivahan — Frequently Asked Questions
+          </h2>
+          <p className="text-sm text-navy-500 text-center mb-8 hindi-text">
+            मुख्यमंत्री सुगम परिवहन सेवा — अक्सर पूछे जाने वाले प्रश्न
+          </p>
+          <div className="space-y-3">
+            {[
+              {
+                q: 'What is MP Sugam Parivahan (Mukhyamantri Sugam Parivahan Seva)?',
+                qHi: 'एमपी सुगम परिवहन (मुख्यमंत्री सुगम परिवहन सेवा) क्या है?',
+                a: 'MP Sugam Parivahan is a Madhya Pradesh government-supervised public bus service launched on September 25, 2026. It provides intercity and intracity bus transportation across 7 regional transport divisions with 351 initial buses, targeting a fleet of 15,000 by 2031.'
+              },
+              {
+                q: 'How many buses are in MP Sugam Parivahan?',
+                qHi: 'एमपी सुगम परिवहन में कितनी बसें हैं?',
+                a: 'The service launched with 351 buses. Indore has the largest allocation with 145 buses (95 intracity + 50 intercity). The target fleet is 15,000 buses by 2031.'
+              },
+              {
+                q: 'Which cities are covered under Sugam Parivahan?',
+                qHi: 'सुगम परिवहन के तहत कौन से शहर शामिल हैं?',
+                a: 'Seven regional divisions: Indore, Bhopal, Jabalpur, Gwalior, Ujjain, Sagar, and Rewa, with connections to Dewas, Dhar, Shivpuri, Morena, Shahdol, Singrauli and more.'
+              },
+              {
+                q: 'What types of buses operate under Sugam Parivahan?',
+                qHi: 'सुगम परिवहन में कौन सी बसें चलती हैं?',
+                a: 'AC Electric buses, AC Seater, AC Sleeper, Non-AC Seater, and CNG/Electric buses. All buses have GPS, CCTV, and emergency panic buttons.'
+              },
+              {
+                q: 'What is the Indore to Singrauli bus route?',
+                qHi: 'इंदौर से सिंगरौली बस मार्ग क्या है?',
+                a: 'The Indore-Singrauli route covers approximately 889 km, one of the longest routes under Sugam Parivahan, passing through Bhopal, Jabalpur, and Rewa.'
+              },
+              {
+                q: 'Are MP Sugam Parivahan buses safe?',
+                qHi: 'क्या एमपी सुगम परिवहन बसें सुरक्षित हैं?',
+                a: 'Yes. All buses are equipped with GPS tracking, CCTV surveillance, emergency panic buttons, and many offer wheelchair accessibility with low-floor designs.'
+              },
+              {
+                q: 'How to find MP Sugam Parivahan bus timings?',
+                qHi: 'एमपी सुगम परिवहन बस का समय कैसे पता करें?',
+                a: 'Search routes on this portal to find departure times, pickup points, and bus information. Timetables are being updated progressively following the launch.'
+              },
+            ].map((faq, i) => (
+              <details key={i} className="group bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
+                <summary className="flex items-center justify-between cursor-pointer p-4 md:p-5 font-semibold text-navy-900 text-sm md:text-base hover:bg-gray-100 transition-colors list-none">
+                  <span>{faq.q}</span>
+                  <ChevronRight className="w-5 h-5 text-navy-400 transition-transform group-open:rotate-90 flex-shrink-0 ml-2" />
+                </summary>
+                <div className="px-4 md:px-5 pb-4 md:pb-5">
+                  <p className="text-sm text-navy-600 leading-relaxed">{faq.a}</p>
+                  <p className="text-xs text-navy-400 mt-2 hindi-text">{faq.qHi}</p>
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* About Section — SEO keyword-rich content */}
+      <section className="py-10 lg:py-14 bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4">
+          <h2 className="text-xl md:text-2xl font-bold text-navy-900 mb-4 text-center">
+            About MP Sugam Parivahan — Madhya Pradesh Government Bus Service
+          </h2>
+          <div className="prose prose-sm max-w-none text-navy-600 space-y-4">
+            <p>
+              <strong>MP Sugam Parivahan</strong> (मुख्यमंत्री सुगम परिवहन सेवा / Mukhyamantri Sugam Parivahan Seva) is a new public transportation initiative by the Madhya Pradesh government, launched on <strong>September 25, 2026</strong>. The service aims to provide affordable, safe, and accessible bus transportation across all regions of Madhya Pradesh.
+            </p>
+            <p>
+              The initial launch includes <strong>351 buses</strong> distributed across <strong>7 regional transport divisions</strong> — Indore, Bhopal, Jabalpur, Gwalior, Ujjain, Sagar, and Rewa. Indore receives the largest allocation with <strong>145 buses</strong> (95 intracity and 50 intercity). The government has set an ambitious target of expanding the fleet to <strong>15,000 buses by 2031</strong>.
+            </p>
+            <p>
+              The bus fleet includes <strong>electric buses</strong>, <strong>CNG buses</strong>, and diesel-operated vehicles in AC and Non-AC configurations. All buses are equipped with modern safety features including <strong>GPS tracking</strong>, <strong>CCTV surveillance</strong>, <strong>emergency panic buttons</strong>, and wheelchair accessibility.
+            </p>
+            <p>
+              Popular routes under the Sugam Parivahan network include <strong>Indore to Bhopal</strong> (~198 km), <strong>Indore to Ujjain</strong> (~55 km), <strong>Indore to Jabalpur</strong> (~378 km), <strong>Bhopal to Jabalpur</strong> (~280 km), <strong>Gwalior to Bhopal</strong> (~423 km), and the long-distance <strong>Indore to Singrauli</strong> route (~889 km).
+            </p>
+            <p className="text-xs text-navy-400 italic">
+              Note: This is an independent information portal. Timings, fares, and route details should be verified from official government sources before travel.
+            </p>
           </div>
         </div>
       </section>
