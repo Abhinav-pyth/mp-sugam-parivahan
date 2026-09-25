@@ -44,8 +44,8 @@
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231e3a5f'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='16' font-weight='bold' fill='white' text-anchor='middle'%3E🚌%3C/text%3E%3C/svg%3E" />
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231e3a5f'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='16' font-weight='bold' fill='white' text-anchor='middle'%3E🚌%3C/text%3E%3C/svg%3E" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231e3a5f'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='white'>🚌</text></svg>" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231e3a5f'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='white'>🚌</text></svg>" />
 
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -216,49 +216,28 @@
     </style>
   </head>
   <body>
-    <div id="root">
-      <!-- SEO Fallback Content for Crawlers -->
-      <noscript>
-        <header style="padding:20px;background:#1e3a5f;color:white;text-align:center;">
-          <h1>MP Sugam Parivahan — मुख्‍यमंत्री सुगम परिवहन सेवा</h1>
-          <p>Madhya Pradesh Government Bus Services</p>
+    <div id="root"></div>
+    <noscript>
+      <div style="font-family:system-ui,sans-serif;max-width:800px;margin:0 auto;padding:20px;">
+        <header style="padding:20px;background:#1e3a5f;color:white;text-align:center;border-radius:8px;margin-bottom:20px;">
+          <h1 style="margin:0 0 8px;">MP Sugam Parivahan — मुख्यमंत्री सुगम परिवहन सेवा</h1>
+          <p style="margin:0;opacity:0.9;">Madhya Pradesh Government Bus Services</p>
         </header>
-        <main style="max-width:800px;margin:0 auto;padding:20px;">
-          <h2>About MP Sugam Parivahan</h2>
-          <p>MP Sugam Parivahan (Mukhyamantri Sugam Parivahan Seva) is a Madhya Pradesh government bus service launched on September 25, 2026 with 351 buses across 7 regional divisions.</p>
-          
-          <h2>Popular Routes</h2>
-          <ul>
-            <li>Indore to Bhopal — 198 km, ~3h 30m</li>
-            <li>Indore to Ujjain — 55 km, ~1h 15m</li>
-            <li>Indore to Dewas — 38 km, ~50 min</li>
-            <li>Indore to Dhar — 34 km, ~45 min</li>
-            <li>Indore to Jabalpur — 378 km, ~6h 30m</li>
-            <li>Indore to Rewa — 550 km, ~9h</li>
-            <li>Bhopal to Jabalpur — 280 km, ~4h 45m</li>
-            <li>Gwalior to Bhopal — 423 km, ~6h</li>
-            <li>Indore to Singrauli — 889 km (long-distance)</li>
-          </ul>
-          
-          <h2>Cities Covered</h2>
-          <p>Indore (145 buses), Bhopal, Jabalpur, Gwalior, Ujjain, Sagar, Rewa</p>
-          
-          <h2>Bus Types</h2>
-          <p>AC Electric, AC Seater, AC Sleeper, Non-AC Seater, CNG, Electric buses with GPS, CCTV, and emergency systems.</p>
-          
-          <h2>Key Facts</h2>
-          <ul>
-            <li>351 initial buses launched September 25, 2026</li>
-            <li>145 buses allocated to Indore (95 intracity + 50 intercity)</li>
-            <li>7 regional transport divisions</li>
-            <li>Target: 15,000 buses by 2031</li>
-            <li>All buses have GPS tracking, CCTV, emergency buttons</li>
-          </ul>
-          
-          <p><em>Please enable JavaScript for the full interactive experience including route search, live tracking, and fare information.</em></p>
-        </main>
-      </noscript>
-    </div>
+        <h2>About MP Sugam Parivahan</h2>
+        <p>MP Sugam Parivahan (Mukhyamantri Sugam Parivahan Seva) is a Madhya Pradesh government bus service launched on September 25, 2026 with 351 buses across 7 regional divisions.</p>
+        <h2>Popular Routes</h2>
+        <ul>
+          <li>Indore to Bhopal — 198 km</li>
+          <li>Indore to Ujjain — 55 km</li>
+          <li>Indore to Dewas — 38 km</li>
+          <li>Indore to Jabalpur — 378 km</li>
+          <li>Indore to Singrauli — 889 km</li>
+        </ul>
+        <h2>Cities Covered</h2>
+        <p>Indore (145 buses), Bhopal, Jabalpur, Gwalior, Ujjain, Sagar, Rewa</p>
+        <p><em>Please enable JavaScript for the full interactive experience.</em></p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
