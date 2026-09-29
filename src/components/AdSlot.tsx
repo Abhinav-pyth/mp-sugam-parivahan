@@ -38,6 +38,12 @@ export const ADSTERRA_SNIPPETS: Record<string, string> = {
   mid_page:              ad567,
   in_content_2:          ad567,
   routes_above_results:  ad567,
+
+  // --- Site-wide Adsterra formats (JS SYNC — load once per page view) ---
+  // Popunder: triggers on first user interaction; no visible container.
+  popunder: '<script src="https://pl31570075.profitableratecpmnetwork.com/5c/12/0b/5c120b40889aa54e5b3353d9f3da9fb1.js"></script>',
+  // SocialBar: floating social bar overlay from Adsterra.
+  socialbar: '<script src="https://pl31570074.profitableratecpmnetwork.com/bb/e8/39/bbe839be5a627e331c21e7c3c5b1160e.js"></script>',
 };
 
 interface AdSlotProps {
@@ -50,9 +56,12 @@ interface AdSlotProps {
 }
 
 const formatStyles: Record<AdFormat, React.CSSProperties> = {
-  horizontal: { minHeight: 300, maxWidth: 970 },
-  vertical: { minHeight: 300, maxWidth: 160 }, // Adsterra 160x300 banner
-  inline: { minHeight: 300, maxWidth: '100%' },
+  // The container must be exactly 160x300 — Adsterra's invoke.js writes the
+  // iframe using the width/height from atOptions, so any larger reserved box
+  // would show empty gray space around a single small ad.
+  horizontal: { minHeight: 300, height: 300, width: 160 },
+  vertical: { minHeight: 300, height: 300, width: 160 }, // Adsterra 160x300 banner
+  inline: { minHeight: 300, height: 300, width: 160 },
   sticky: { minHeight: 60, maxWidth: '100%' },
 };
 
@@ -71,8 +80,58 @@ const loadExternalScript = (src: string): Promise<void> =>
 export function AdStickyBottom({ snippet }: { snippet?: string }) {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 bg-white/95 backdrop-blur">
-      <AdSlot placement="sticky_bottom" snippet={snippet} format="sticky" className="my-0 max-w-none" />
+      {/* 160x300 is too tall for a sticky bar; hide it until a dedicated
+          horizontal/sticky Adsterra code is added to ADSTERRA_SNIPPETS. */}
+      <AdSlot placement="sticky_bottom" snippet={snippet} format="sticky" className="my-0 max-w-none hidden" />
     </div>
+  );
+}
+
+/**
+ * AdFormats — site-wide Adsterra overlays that are NOT placed inside a box:
+ *   • Popunder  (loaded from pl31570075.profitableratecpmnetwork.com)
+ *   • SocialBar (loaded from pl31570074.profitableratecpmnetwork.com)
+ *
+ * These JS-SYNC snippets call document.write(), which only works during the
+ * initial HTML parsing of a full page load. So we inject them into a hidden
+ * iframe whose document we write into once it loads — the same technique
+ * Adsterra's own sync tags use. Each script loads at most once per page view.
+ */
+const OVERLAY_LOADED = new Set<string>();
+
+function SyncOverlayScript({ src }: { src: string }) {
+  useEffect(() => {
+    if (OVERLAY_LOADED.has(src)) return;
+    OVERLAY_LOADED.add(src);
+
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.setAttribute('aria-hidden', 'true');
+    iframe.setAttribute('title', 'ad-overlay');
+    document.body.appendChild(iframe);
+
+    try {
+      const doc = iframe.contentDocument;
+      if (!doc) throw new Error('no iframe document');
+      doc.open();
+      doc.write(`<script src="${src}"><\/script>`);
+      doc.close();
+    } catch {
+      // Fallback: append as a normal async script (works for scripts that
+      // don't rely on document.write, e.g. some popunder versions).
+      loadExternalScript(src).catch(() => {});
+    }
+  }, [src]);
+
+  return null;
+}
+
+export function AdFormats() {
+  return (
+    <>
+      <SyncOverlayScript src="https://pl31570075.profitableratecpmnetwork.com/5c/12/0b/5c120b40889aa54e5b3353d9f3da9fb1.js" />
+      <SyncOverlayScript src="https://pl31570074.profitableratecpmnetwork.com/bb/e8/39/bbe839be5a627e331c21e7c3c5b1160e.js" />
+    </>
   );
 }
 
@@ -84,22 +143,63 @@ export default function AdSlot({ placement, snippet, format = 'horizontal', clas
     const el = containerRef.current;
     if (!el || !code) return;
 
-    // Render the snippet HTML inside the container
-    el.innerHTML = code;
+    // IMPORTANT: Adsterra's invoke.js writes its iframe with document.write(),
+    // which only works when the script runs during initial page parsing. In a
+    // React SPA it would be blocked, so we use the official async workaround:
+    // load invoke.js via XHR and inject the ad HTML into this container.
+    const keyMatch = code.match(/'key'\s*:\s*'([a-f0-9]+)'/);
+    const srcMatch = code.match(/https:\/\/[^"']+\/invoke\.js/);
 
-    // Manually execute any inline <script> tags injected via innerHTML
+    if (keyMatch && srcMatch) {
+      const key = keyMatch[1];
+      const src = srcMatch[0];
+      // Set atOptions exactly as Adsterra's snippet defines it (160x300 iframe)
+      (window as any).atOptions = {
+        key: key,
+        format: 'iframe',
+        height: 300,
+        width: 160,
+        params: {},
+      };
+
+      let cancelled = false;
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', src, true);
+      xhr.withCredentials = true;
+      xhr.responseType = 'text';
+      xhr.onload = () => {
+        if (cancelled || !el.isConnected) return;
+        el.innerHTML = xhr.responseText || '';
+        // Execute any <script> tags that came back in the ad markup
+        el.querySelectorAll('script').forEach((oldScript) => {
+          const newScript = document.createElement('script');
+          Array.from(oldScript.attributes).forEach((attr) => {
+            newScript.setAttribute(attr.name, attr.value);
+          });
+          if (!oldScript.src) newScript.textContent = oldScript.textContent;
+          oldScript.parentNode?.replaceChild(newScript, oldScript);
+        });
+      };
+      xhr.onerror = () => {
+        if (!cancelled && el.isConnected) el.innerHTML = '';
+      };
+      xhr.send();
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    // Fallback: render the snippet HTML directly and execute its scripts
+    el.innerHTML = code;
     el.querySelectorAll('script').forEach((oldScript) => {
       const newScript = document.createElement('script');
       Array.from(oldScript.attributes).forEach((attr) => {
         newScript.setAttribute(attr.name, attr.value);
       });
-      if (oldScript.src) {
-        // async external ad script
-        oldScript.parentNode?.replaceChild(newScript, oldScript);
-      } else {
+      if (!oldScript.src) {
         newScript.textContent = oldScript.textContent;
-        oldScript.parentNode?.replaceChild(newScript, oldScript);
       }
+      oldScript.parentNode?.replaceChild(newScript, oldScript);
     });
   }, [code]);
 
