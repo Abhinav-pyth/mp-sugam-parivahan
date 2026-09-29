@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { DemoBadge } from '../components/Layout';
+import AdSlot from '../components/AdSlot';
 import { buses, routes, CITIES } from '../data/mockData';
 import { Search, Filter, ArrowRight, Clock, MapPin, Bus, Zap, ChevronDown, SlidersHorizontal, ArrowUpDown, X } from 'lucide-react';
 
@@ -125,6 +126,9 @@ export default function RoutesPage() {
         <div className="mb-4 flex items-center gap-2">
           <DemoBadge />
         </div>
+
+        {/* Adsterra — Above results banner */}
+        <AdSlot placement="routes_above_results" format="horizontal" className="mb-6" />
 
         {/* Bus Results */}
         {filteredBuses.length > 0 ? (
