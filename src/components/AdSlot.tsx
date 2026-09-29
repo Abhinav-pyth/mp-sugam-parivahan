@@ -153,7 +153,49 @@ export default function AdSlot({ placement, snippet, format = 'horizontal', clas
     if (keyMatch && srcMatch) {
       const key = keyMatch[1];
       const src = srcMatch[0];
-      // Set atOptions exactly as Adsterra's snippet defines it (160x300 iframe)
+
+      // IMPORTANT: do NOT fetch invoke.js with XHR/fetch — Adsterra serves it
+      // with `Access-Control-Allow-Origin: *`, which browsers block when the
+      // request includes credentials (CORS error → ad never renders).
+      //
+      // Official-safe workaround for React SPAs: render invoke.js inside a
+      // same-origin hidden iframe. Inside that iframe, document.write() works
+      // normally (it is how Adsterra's sync tag operates), and the resulting
+      // ad is displayed through the iframe element itself.
+      const inner = document.createElement('iframe');
+      inner.style.cssText = 'width:160px;height:300px;border:0;display:block;background:transparent;';
+      inner.setAttribute('scrolling', 'no');
+      inner.setAttribute('title', 'Advertisement');
+      inner.setAttribute('aria-hidden', 'false');
+
+      let wroteDoc = false;
+      try {
+        const doc = inner.contentDocument;
+        if (doc) {
+          doc.open();
+          doc.write(
+            `<!doctype html><html><head><style>html,body{margin:0;padding:0;overflow:hidden;}</style></head><body>` +
+              `<script>window.atOptions={key:'${key}',format:'iframe',height:300,width:160,params:{}};<\/script>` +
+              `<script src="${src}"><\/script>` +
+              `</body></html>`
+          );
+          doc.close();
+          wroteDoc = true;
+        }
+      } catch {
+        wroteDoc = false;
+      }
+
+      if (wroteDoc) {
+        el.innerHTML = '';
+        el.appendChild(inner);
+        return () => {
+          // Remove iframe so it stops fetching ad resources when unmounted
+          inner.remove();
+        };
+      }
+
+      // Fallback (rare): plain script tag injection without XHR
       (window as any).atOptions = {
         key: key,
         format: 'iframe',
@@ -161,32 +203,12 @@ export default function AdSlot({ placement, snippet, format = 'horizontal', clas
         width: 160,
         params: {},
       };
-
-      let cancelled = false;
-      const xhr = new XMLHttpRequest();
-      xhr.open('GET', src, true);
-      xhr.withCredentials = true;
-      xhr.responseType = 'text';
-      xhr.onload = () => {
-        if (cancelled || !el.isConnected) return;
-        el.innerHTML = xhr.responseText || '';
-        // Execute any <script> tags that came back in the ad markup
-        el.querySelectorAll('script').forEach((oldScript) => {
-          const newScript = document.createElement('script');
-          Array.from(oldScript.attributes).forEach((attr) => {
-            newScript.setAttribute(attr.name, attr.value);
-          });
-          if (!oldScript.src) newScript.textContent = oldScript.textContent;
-          oldScript.parentNode?.replaceChild(newScript, oldScript);
-        });
-      };
-      xhr.onerror = () => {
-        if (!cancelled && el.isConnected) el.innerHTML = '';
-      };
-      xhr.send();
-      return () => {
-        cancelled = true;
-      };
+      el.innerHTML = '';
+      const s = document.createElement('script');
+      s.src = src;
+      s.async = true;
+      el.appendChild(s);
+      return;
     }
 
     // Fallback: render the snippet HTML directly and execute its scripts
