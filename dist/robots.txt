@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://mp-sugam-parivahan.vercel.app/sitemap.xml
+
+# Crawl directives
+Disallow: /api/
+Disallow: /admin/
+
+# Allow all search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
