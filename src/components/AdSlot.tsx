@@ -167,48 +167,58 @@ export default function AdSlot({ placement, snippet, format = 'horizontal', clas
       inner.setAttribute('scrolling', 'no');
       inner.setAttribute('title', 'Advertisement');
       inner.setAttribute('aria-hidden', 'false');
+      // sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox
+      // allow-same-origin" is what Adsterra's own invoke.js iframe uses.
+      inner.setAttribute(
+        'sandbox',
+        'allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms allow-same-origin'
+      );
 
-      let wroteDoc = false;
-      try {
-        const doc = inner.contentDocument;
-        if (doc) {
-          doc.open();
-          doc.write(
-            `<!doctype html><html><head><style>html,body{margin:0;padding:0;overflow:hidden;}</style></head><body>` +
-              `<script>window.atOptions={key:'${key}',format:'iframe',height:300,width:160,params:{}};<\/script>` +
-              `<script src="${src}"><\/script>` +
-              `</body></html>`
-          );
-          doc.close();
-          wroteDoc = true;
-        }
-      } catch {
-        wroteDoc = false;
-      }
+      const adDocHtml =
+        `<!doctype html><html><head><style>html,body{margin:0;padding:0;overflow:hidden;}</style></head><body>` +
+        `<script>window.atOptions={key:'${key}',format:'iframe',height:300,width:160,params:{}};<\/script>` +
+        `<script src="${src}"><\/script>` +
+        `</body></html>`;
 
-      if (wroteDoc) {
-        el.innerHTML = '';
-        el.appendChild(inner);
-        return () => {
-          // Remove iframe so it stops fetching ad resources when unmounted
-          inner.remove();
-        };
-      }
-
-      // Fallback (rare): plain script tag injection without XHR
-      (window as any).atOptions = {
-        key: key,
-        format: 'iframe',
-        height: 300,
-        width: 160,
-        params: {},
-      };
+      // Attach the iframe to the DOM FIRST, then write into it once its
+      // about:blank document is ready. Writing before insertion can fail in
+      // some browsers (contentDocument may be null / detached).
       el.innerHTML = '';
-      const s = document.createElement('script');
-      s.src = src;
-      s.async = true;
-      el.appendChild(s);
-      return;
+      el.appendChild(inner);
+
+      const writeToIframe = () => {
+        try {
+          const doc = inner.contentDocument;
+          if (!doc) throw new Error('no contentDocument');
+          doc.open();
+          doc.write(adDocHtml);
+          doc.close();
+        } catch {
+          // Fallback (rare): plain script tag injection without XHR —
+          // invoke.js will append its ad iframe to this container.
+          (window as any).atOptions = { key, format: 'iframe', height: 300, width: 160, params: {} };
+          el.innerHTML = '';
+          const s = document.createElement('script');
+          s.src = src;
+          s.async = true;
+          el.appendChild(s);
+        }
+      };
+
+      if (inner.contentDocument?.readyState === 'complete') {
+        writeToIframe();
+      } else {
+        inner.addEventListener('load', writeToIframe, { once: true });
+        // Safety net: some browsers fire load before we attach the listener.
+        setTimeout(() => {
+          if (!inner.contentDocument?.body?.children.length) writeToIframe();
+        }, 150);
+      }
+
+      return () => {
+        // Remove iframe so it stops fetching ad resources when unmounted
+        inner.remove();
+      };
     }
 
     // Fallback: render the snippet HTML directly and execute its scripts
