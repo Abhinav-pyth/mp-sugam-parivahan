@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { Header, Footer, LaunchNotice } from './components/Layout';
-import AdSlot, { AdStickyBottom } from './components/AdSlot';
+import AdSlot, { AdFormats } from './components/AdSlot';
 import HomePage from './pages/HomePage';
 import RoutesPage from './pages/RoutesPage';
 import RouteDetailPage from './pages/RouteDetailPage';
@@ -16,7 +16,7 @@ import BusDetailPage from './pages/BusDetailPage';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col min-h-screen pb-[120px] lg:pb-0">
+    <div className="flex flex-col min-h-screen">
       <Header />
       <LaunchNotice />
       {/* Adsterra — Top leaderboard (728x90 / responsive) */}
@@ -29,8 +29,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         <AdSlot placement="footer_banner" format="horizontal" />
       </div>
       <Footer />
-      {/* Adsterra — Sticky bottom banner (mobile) */}
-      <AdStickyBottom />
+      {/* Adsterra — site-wide formats: Popunder + SocialBar (load once per page view) */}
+      <AdFormats />
     </div>
   );
 }
