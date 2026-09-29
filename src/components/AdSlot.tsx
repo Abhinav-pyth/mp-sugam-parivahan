@@ -153,39 +153,71 @@ export default function AdSlot({ placement, snippet, format = 'horizontal', clas
     if (keyMatch && srcMatch) {
       const key = keyMatch[1];
       const src = srcMatch[0];
-      // Set atOptions exactly as Adsterra's snippet defines it (160x300 iframe)
-      (window as any).atOptions = {
-        key: key,
-        format: 'iframe',
-        height: 300,
-        width: 160,
-        params: {},
+
+      // IMPORTANT: do NOT fetch invoke.js with XHR/fetch — Adsterra serves it
+      // with `Access-Control-Allow-Origin: *`, which browsers block when the
+      // request includes credentials (CORS error → ad never renders).
+      //
+      // Official-safe workaround for React SPAs: render invoke.js inside a
+      // same-origin hidden iframe. Inside that iframe, document.write() works
+      // normally (it is how Adsterra's sync tag operates), and the resulting
+      // ad is displayed through the iframe element itself.
+      const inner = document.createElement('iframe');
+      inner.style.cssText = 'width:160px;height:300px;border:0;display:block;background:transparent;';
+      inner.setAttribute('scrolling', 'no');
+      inner.setAttribute('title', 'Advertisement');
+      inner.setAttribute('aria-hidden', 'false');
+      // sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox
+      // allow-same-origin" is what Adsterra's own invoke.js iframe uses.
+      inner.setAttribute(
+        'sandbox',
+        'allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms allow-same-origin'
+      );
+
+      const adDocHtml =
+        `<!doctype html><html><head><style>html,body{margin:0;padding:0;overflow:hidden;}</style></head><body>` +
+        `<script>window.atOptions={key:'${key}',format:'iframe',height:300,width:160,params:{}};<\/script>` +
+        `<script src="${src}"><\/script>` +
+        `</body></html>`;
+
+      // Attach the iframe to the DOM FIRST, then write into it once its
+      // about:blank document is ready. Writing before insertion can fail in
+      // some browsers (contentDocument may be null / detached).
+      el.innerHTML = '';
+      el.appendChild(inner);
+
+      const writeToIframe = () => {
+        try {
+          const doc = inner.contentDocument;
+          if (!doc) throw new Error('no contentDocument');
+          doc.open();
+          doc.write(adDocHtml);
+          doc.close();
+        } catch {
+          // Fallback (rare): plain script tag injection without XHR —
+          // invoke.js will append its ad iframe to this container.
+          (window as any).atOptions = { key, format: 'iframe', height: 300, width: 160, params: {} };
+          el.innerHTML = '';
+          const s = document.createElement('script');
+          s.src = src;
+          s.async = true;
+          el.appendChild(s);
+        }
       };
 
-      let cancelled = false;
-      const xhr = new XMLHttpRequest();
-      xhr.open('GET', src, true);
-      xhr.withCredentials = true;
-      xhr.responseType = 'text';
-      xhr.onload = () => {
-        if (cancelled || !el.isConnected) return;
-        el.innerHTML = xhr.responseText || '';
-        // Execute any <script> tags that came back in the ad markup
-        el.querySelectorAll('script').forEach((oldScript) => {
-          const newScript = document.createElement('script');
-          Array.from(oldScript.attributes).forEach((attr) => {
-            newScript.setAttribute(attr.name, attr.value);
-          });
-          if (!oldScript.src) newScript.textContent = oldScript.textContent;
-          oldScript.parentNode?.replaceChild(newScript, oldScript);
-        });
-      };
-      xhr.onerror = () => {
-        if (!cancelled && el.isConnected) el.innerHTML = '';
-      };
-      xhr.send();
+      if (inner.contentDocument?.readyState === 'complete') {
+        writeToIframe();
+      } else {
+        inner.addEventListener('load', writeToIframe, { once: true });
+        // Safety net: some browsers fire load before we attach the listener.
+        setTimeout(() => {
+          if (!inner.contentDocument?.body?.children.length) writeToIframe();
+        }, 150);
+      }
+
       return () => {
-        cancelled = true;
+        // Remove iframe so it stops fetching ad resources when unmounted
+        inner.remove();
       };
     }
 
