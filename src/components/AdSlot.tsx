@@ -15,19 +15,29 @@ import React, { useEffect, useRef } from 'react';
 
 export type AdFormat = 'horizontal' | 'vertical' | 'inline' | 'sticky';
 
-// Paste your Adsterra snippet codes here, keyed by placement name.
-// Leave empty until you have your codes — slots will render as reserved placeholders.
+// Your Adsterra placement codes, keyed by placement name.
+const ad567 = `
+<script>
+  atOptions = {
+    'key' : 'ad567f5559551e4def9b3876d07b41ee',
+    'format' : 'iframe',
+    'height' : 300,
+    'width' : 160,
+    'params' : {}
+  };
+</script>
+<script src="https://www.highrevenueformat.com/ad567f5559551e4def9b3876d07b41ee/invoke.js"></script>
+`;
+
 export const ADSTERRA_SNIPPETS: Record<string, string> = {
-  // Site-wide (App.tsx):
-  // leaderboard_top:      '<script src="https://pl####.adsterra.com/v?..." async></script>',
-  // footer_banner:        '',
-  // sticky_bottom:        '',
-  // HomePage:
-  // in_content_1:         '',
-  // mid_page:             '',
-  // in_content_2:         '',
-  // RoutesPage:
-  // routes_above_results: '',
+  // 160x300 banner (Adsterra key: ad567f5559551e4def9b3876d07b41ee)
+  leaderboard_top:       ad567,
+  footer_banner:         ad567,
+  sticky_bottom:         ad567,
+  in_content_1:          ad567,
+  mid_page:              ad567,
+  in_content_2:          ad567,
+  routes_above_results:  ad567,
 };
 
 interface AdSlotProps {
@@ -40,9 +50,9 @@ interface AdSlotProps {
 }
 
 const formatStyles: Record<AdFormat, React.CSSProperties> = {
-  horizontal: { minHeight: 90, maxWidth: 970 },
-  vertical: { minHeight: 250, maxWidth: 300 },
-  inline: { minHeight: 100, maxWidth: '100%' },
+  horizontal: { minHeight: 300, maxWidth: 970 },
+  vertical: { minHeight: 300, maxWidth: 160 }, // Adsterra 160x300 banner
+  inline: { minHeight: 300, maxWidth: '100%' },
   sticky: { minHeight: 60, maxWidth: '100%' },
 };
 
