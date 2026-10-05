@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { DemoBadge } from '../components/Layout';
-import AdSlot from '../components/AdSlot';
 import { popularRoutes, cities, statistics, destinations, announcements, routes as allRoutes } from '../data/mockData';
 import { CITIES } from '../data/mockData';
 import {
@@ -150,11 +149,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Adsterra — In-content native banner (between launch info & popular routes) */}
-      <div className="max-w-7xl mx-auto px-4">
-        <AdSlot placement="in_content_1" format="inline" />
-      </div>
-
       {/* Popular Routes */}
       <section className="py-10 lg:py-14 bg-white">
         <div className="max-w-7xl mx-auto px-4">
@@ -205,11 +199,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Adsterra — Mid-page IAB banner (300x250 / responsive) */}
-      <div className="max-w-7xl mx-auto px-4">
-        <AdSlot placement="mid_page" format="horizontal" />
-      </div>
 
       {/* Regional Network */}
       <section className="py-10 lg:py-14 bg-white">
@@ -265,11 +254,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Adsterra — In-content native banner (after destinations) */}
-      <div className="max-w-7xl mx-auto px-4">
-        <AdSlot placement="in_content_2" format="inline" />
-      </div>
 
       {/* Indore Bus Network */}
       <section className="py-10 lg:py-14 bg-white">
